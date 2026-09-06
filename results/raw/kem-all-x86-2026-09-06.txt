@@ -1,4 +1,4 @@
-﻿Configuration info
+Configuration info
 ==================
 Target platform:  AMD64-Windows-10.0.26200
 Compiler:         gcc (15.2.0)

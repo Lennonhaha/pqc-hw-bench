@@ -39,3 +39,7 @@ results/figures/*.png
 
 # 临时调试脚本
 scripts/_dbg_*.py
+
+# 临时脚本 (调试用)
+scripts/_*.py
+_enc-scan.txt
