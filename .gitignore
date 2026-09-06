@@ -43,3 +43,15 @@ scripts/_dbg_*.py
 # 临时脚本 (调试用)
 scripts/_*.py
 _enc-scan.txt
+
+# Vivado 构建产物
+logs/
+hardware/project/
+hardware/reports/
+
+# Experimental scripts (keep as reference, not committed)
+hardware/scripts/check_license.tcl
+# Old failed-run leftover
+results/raw/kem-baseline-x86.txt
+# Root temp files
+/_gitignore_tail.txt

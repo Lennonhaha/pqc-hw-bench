@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Lennonhaha/pqc-hw-bench/results/schema.json",
+  "title": "pqc-hw-bench 基准数据格式 v1.0",
+  "description": "所有基准测量数据的统一格式。格式一经定义不改字段，只增不减，保证历史数据可解析。",
+  "type": "object",
+  "required": ["version", "platform", "algorithm", "operation", "measured_at", "data"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "schema 版本"
+    },
+    "platform": {
+      "type": "object",
+      "required": ["type", "name"],
+      "properties": {
+        "type": { "enum": ["cpu", "fpga", "embedded", "gpu"] },
+        "name": { "type": "string", "description": "如 Artix-7 xc7a35t / Intel Xeon / liboqs 0.16.0" },
+        "detail": { "type": "string", "description": "附加细节: 频率, 编译器, 工具版本等" }
+      }
+    },
+    "algorithm": {
+      "type": "string",
+      "description": "如 ML-KEM-768 / ML-DSA-65 / ML-KEM-768-extmu",
+      "examples": ["ML-KEM-768", "ML-DSA-65"]
+    },
+    "operation": {
+      "type": "string",
+      "enum": ["keygen", "keypair", "encaps", "decaps", "sign", "verify"],
+      "description": "keygen=KEM 密钥生成, keypair=SIG 密钥对生成"
+    },
+    "measured_at": {
+      "type": "string",
+      "format": "date",
+      "description": "测量日期 YYYY-MM-DD"
+    },
+    "commit": {
+      "type": "string",
+      "description": "仓库 commit hash (数据版本锁定，追溯源码)"
+    },
+    "data": {
+      "type": "object",
+      "required": ["latency_us"],
+      "properties": {
+        "latency_us": {
+          "type": "object",
+          "description": "延迟 (微秒)",
+          "properties": {
+            "mean": { "type": "number" },
+            "median": { "type": "number" },
+            "p50": { "type": "number" },
+            "p95": { "type": "number" },
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          },
+          "minProperties": 1
+        },
+        "throughput_ops": {
+          "type": "number",
+          "description": "吞吐量 (ops/s)"
+        },
+        "cycles": {
+          "type": "integer",
+          "description": "硬件时钟周期数 (FPGA)"
+        },
+        "freq_mhz": {
+          "type": "number",
+          "description": "时钟频率 (FPGA)"
+        },
+        "resources": {
+          "type": "object",
+          "description": "FPGA 资源利用率",
+          "properties": {
+            "lut": { "type": "integer" },
+            "ff": { "type": "integer" },
+            "dsp": { "type": "integer" },
+            "bram": { "type": "integer" }
+          }
+        },
+        "power_w": {
+          "type": "number",
+          "description": "功耗 (瓦)"
+        },
+        "env": {
+          "type": "object",
+          "description": "测量环境详情",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

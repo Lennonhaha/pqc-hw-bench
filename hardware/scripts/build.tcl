@@ -1,18 +1,25 @@
 # Copyright 2026 Liu Tianhe (Lennonhaha)
 # SPDX-License-Identifier: CERN-OHL-P-2.0
 # =============================================================================
-# Vivado 构建脚本 (Tcl) — E:\fpga\fibemate
+# Vivado 构建脚本 (Tcl) — pqc-hw-bench FPGA 综合/实现/比特流
 # =============================================================================
 # 用法：vivado -mode batch -source scripts/build.tcl
-# 必须在项目根目录执行 (E:\fpga\fibemate)
+# 必须在 hardware/ 目录执行 (cd hardware && vivado -mode batch ...)
+# 相对路径以 hardware/ 为基准: rtl/..., constraints/...
+# 输出: project/ (Vivado 工程) + reports/ (utilization/timing)
 # =============================================================================
 
-set project_name    fibemate_fpga
+set project_name    pqc_hw_bench
 set project_dir     [file normalize "."]
 set part_name       xc7a35tfgg484-2
 set top_module      fibemate_fpga_top
 
 puts "Project dir: $project_dir"
+puts "Part: $part_name"
+puts "Top: $top_module"
+
+# 输出目录
+file mkdir reports
 
 # 删除旧项目
 if {[file exists $project_dir/project]} {
@@ -23,7 +30,7 @@ if {[file exists $project_dir/project]} {
 create_project -force $project_name $project_dir/project -part $part_name
 
 # 添加源文件
-# 手动指定文件列表（对齐 project_v5 成功合成记录），避免 ntt_core_pipe2_nobom.v 冲突
+# 手动指定文件列表（对齐成功综合记录），避免 ntt_core_pipe2_nobom.v 冲突
 add_files -norecurse {
   rtl/ntt/params.vh
   rtl/ntt/hw_monitor.v
@@ -42,6 +49,7 @@ add_files -norecurse {
   rtl/ntt/ntt_masked_wrapper.v
   rtl/ntt/shake_prng.v
   rtl/ntt/zeta_rom_synth.v
+  rtl/uart_rx.v
   rtl/uart_tx.v
   rtl/fibemate_fpga_top.v
 }
@@ -97,4 +105,6 @@ report_timing_summary -file reports/timing.txt
 puts "\n========================================="
 puts " BUILD COMPLETE"
 puts " Bitstream: project/$project_name.runs/impl_1/$top_module.bit"
+puts " Utilization: reports/utilization.txt"
+puts " Timing: reports/timing.txt"
 puts "=========================================\n"
