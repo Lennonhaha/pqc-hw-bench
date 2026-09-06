@@ -1,0 +1,32 @@
+# pqc-hw-bench 许可证说明
+
+本项目采用**多许可证分层**策略，请按目录查看对应许可证全文：
+
+| 路径 | 许可证 | 全文位置 |
+|---|---|---|
+| `hardware/` (Verilog RTL) | **CERN-OHL-P-2.0** | `hardware/LICENSE` |
+| `software/` + `scripts/` (Python/脚本) | **MIT** | `software/LICENSE` |
+| `docs/` + `reports/` (文档/报告/数据) | **CC BY-SA 4.0** | `docs/LICENSE` |
+
+## 快速指引
+
+- **硬件设计**：允许自由使用、修改、分发（含闭源商业集成），
+  修改后分发需保留本许可证声明。详见 CERN-OHL-P-2.0 全文。
+- **软件**：MIT 宽松许可，允许任意使用，保留版权声明即可。
+- **文档**：知识共享署名-相同方式共享。
+
+## 资产来源声明
+
+`hardware/` 下的 Verilog RTL 源自 FIBEMATE 项目
+（https://github.com/Lennonhaha/fibemate 的 `fpga/rtl/`），
+原作者为本仓库作者（刘天和 / Lennonhaha），单文件以
+`SPDX-License-Identifier` 头声明授权。提取入本仓库时：
+
+- 原文件头声明 MIT 的 → 改为 CERN-OHL-P-2.0 需作者同意；
+  本仓库所有文件由同一作者（刘天和）编写并重新授权为 CERN-OHL-P-2.0，
+  版权年份与归属见各文件头。
+- 无 SPDX 头的文件 → 补 CERN-OHL-P-2.0 声明。
+
+详细追溯见 `docs/provenance.md`。
+
+Copyright © 2026 Liu Tianhe (Lennonhaha)

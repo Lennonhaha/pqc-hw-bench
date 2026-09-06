@@ -1,0 +1,14 @@
+CERN Open Hardware Licence Version 2 — Permissive (CERN-OHL-P-2.0)
+
+本目录下的硬件设计（Verilog RTL 源码）采用 CERN-OHL-P-2.0 许可证。
+
+许可证全文见: https://ohwr.org/cern_ohl_p_v2.txt
+（或 https://cern.ch/cern-ohl ）
+
+本许可证允许：
+- 自由使用、复制、修改、分发硬件设计
+- 包括用于闭源商业产品的集成
+- 修改后分发需保留本许可证声明与版权归属
+
+Copyright © 2026 Liu Tianhe (Lennonhaha)
+SPDX-License-Identifier: CERN-OHL-P-2.0

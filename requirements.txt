@@ -1,0 +1,12 @@
+# requirements.txt — pqc-hw-bench Python 分析栈
+# 数据解析与图表生成（scripts/analyze.py）
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.7
+
+# FPGA 通信（software/fpga_tester.py）
+pyserial>=3.5
+# pyftdi>=0.55   # JTAG (FTDI) — 按需启用
+
+# 数据校验
+jsonschema>=4.0
