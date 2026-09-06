@@ -1,0 +1,31 @@
+{
+  "schema": "pqc-hw-bench/result-v0.1",
+  "platform": "x86-64",
+  "impl": "liboqs-0.16.0 (gcc 15.2.0, AVX2)",
+  "alg": "ML-KEM-768",
+  "ops": [
+    {
+      "alg": "ML-KEM-768",
+      "op": "keygen",
+      "stat": "mean",
+      "val": 336.304,
+      "unit": "us/op"
+    },
+    {
+      "alg": "ML-KEM-768",
+      "op": "encaps",
+      "stat": "mean",
+      "val": 361.402,
+      "unit": "us/op"
+    },
+    {
+      "alg": "ML-KEM-768",
+      "op": "decaps",
+      "stat": "mean",
+      "val": 58.959,
+      "unit": "us/op"
+    }
+  ],
+  "date": "2026-09-06",
+  "duration_s": 2
+}

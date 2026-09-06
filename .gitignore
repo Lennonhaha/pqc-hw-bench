@@ -34,4 +34,8 @@ Thumbs.db
 results/raw/*.csv
 results/figures/*.png
 !results/raw/.gitkeep
+!results/raw/summary-*.csv
 !results/figures/.gitkeep
+
+# 临时调试脚本
+scripts/_dbg_*.py

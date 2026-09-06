@@ -75,4 +75,15 @@ pqc-hw-bench/
 
 ## 状态
 
-🚧 项目启动中（2026-09-06）
+🚀 阶段 1 进行中（2026-09-06）
+
+**已完成**：
+- [x] 仓库初始化并公开（github.com/Lennonhaha/pqc-hw-bench，commit 2f46d3a）
+- [x] liboqs 0.16.0 编译（gcc 15.2 + AVX2，含 speed_kem/speed_sig）
+- [x] CPU 基线首测：ML-KEM-768 keygen 262µs / encaps 290µs / decaps 48.5µs
+- [x] 环境搭建文档 docs/setup.md
+
+**进行中**：
+- [ ] 全量 KEM + 签名基准（results/raw/）
+- [ ] bench_sw.py 解析验证 → results 结构化 JSON/CSV
+- [ ] NTT core cycle counter（硬件测量前置）
