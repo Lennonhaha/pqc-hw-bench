@@ -72,3 +72,49 @@ vivado -mode batch -source scripts/hier_report.tcl
 # 输出: reports/utilization_nttcore.txt (u_ntt_core 核级)
 #       reports/utilization_hier.txt   (全层次)
 ```
+
+## B1 预硅功耗侧信道评估 (toggle-count TVLA/ADLA)
+
+**定位**: Telescope 式预硅评估的最小验证——无物理测量平台 (ChipWhisperer/示波器) 时，
+用 RTL 行为仿真 + HD (Hamming Distance) toggle 计数作为动态功耗代理，
+统计检验 NTT 数据通路的输入值依赖泄露。
+
+**方法** (2026-09-06, 对应 ADLA 论文 arXiv:2603.18647):
+
+| 项 | 值 |
+|----|-----|
+| DUT | `tensor_ntt_scheduler` (USE_PIPE=1) → `ntt_core_pipe` |
+| 功耗模型 | HD toggle 计数 (5 信号: ram_din / bf_a_out / bf_b_out / ram_dout_a/b) |
+| 实验设计 | A/B 均 U[0,3328] 随机系数 (种子 A11CE/C0FFEE)，同分布不同取值 |
+| 样本 | 128 runs/组 × 256 系数，每 run 完整 NTT 正变换 |
+| 统计 | Welch t-test (TVLA, 阈 4.5) + 两样本 Anderson-Darling (ADLA, 阈 11.99) |
+| 工具 | iverilog 12.0 + Python (无外部依赖) |
+
+**结果** (3 次独立复现一致):
+
+```
+A n=128 mean=1723.19 stdev=55.74
+B n=128 mean=1727.66 stdev=53.05
+TVLA  |t|=0.657  -> PASS (threshold 4.5)
+ADLA  A2=0.753  -> PASS (threshold 11.99)
+```
+
+**结论**: NTT 流水核 toggle 功耗分布不依赖输入多项式取值——在 HD 模型下无输入值依赖泄露。
+干净基线，后续若引入秘密相关路径 (如 masked 蝶形) 可同框架对比。
+
+**复现**:
+
+```bash
+# 1. 生成 A/B 向量 (根 sim/)
+python scripts/gen_ntt_vectors.py
+# 2. 编译 testbench
+iverilog -I hardware/rtl/ntt -I hardware/sim -o hardware/sim/tb_ntt_toggle.vvp \
+  hardware/rtl/ntt/mod_add.v hardware/rtl/ntt/mod_sub.v hardware/rtl/ntt/mod_mult.v \
+  hardware/rtl/ntt/ntt_butterfly_unif.v hardware/rtl/ntt/zeta_rom.v hardware/rtl/ntt/ntt_core.v \
+  hardware/rtl/ntt/ntt_core_pipe.v hardware/rtl/ntt/tensor_ntt_scheduler.v \
+  hardware/sim/tb_ntt_toggle_tvla.v
+# 3. 仿真 (cwd=仓库根, ~70s; zeta_rom.v 读 sim/zetas_mont.mem)
+vvp hardware/sim/tb_ntt_toggle.vvp > sim/toggle_raw.txt
+# 4. 统计 (输出到 results/raw/ntt-toggle-tvla-b1.json)
+python scripts/analyze_toggle.py
+```

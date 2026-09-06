@@ -55,3 +55,11 @@ hardware/scripts/check_license.tcl
 results/raw/kem-baseline-x86.txt
 # Root temp files
 /_gitignore_tail.txt
+
+# NTT toggle TVLA simulation artifacts (regenerate via scripts/gen_ntt_vectors.py)
+/sim/vectors_*.mem
+/sim/toggle_raw.txt
+/sim/vvp_out.txt
+/hardware/sim/tb_ntt_toggle.vvp
+/scripts/sim/
+/hardware/sim/zetas_mont.mem
