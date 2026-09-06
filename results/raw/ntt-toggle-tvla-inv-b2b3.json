@@ -1,0 +1,35 @@
+{
+  "suite": "ntt-toggle-tvla-inv",
+  "title": "Pre-silicon power side-channel: NTT toggle-count TVLA/ADLA (inv)",
+  "date": "2026-09-07T01:02:21+0800",
+  "mode": "inv",
+  "dut": "tensor_ntt_scheduler (USE_PIPE=1) -> ntt_core_pipe",
+  "power_model": "HD toggle count on ram_din/bf_a_out/bf_b_out/ram_dout_a/b",
+  "design": "A/B both uniform random coeffs in [0,3328], seeds A11CE/C0FFEE; same distribution, different values -> value-dependence check",
+  "groups": {
+    "A": {
+      "n": 128,
+      "mean": 3604.8,
+      "stdev": 55.78,
+      "min": 3428,
+      "max": 3729
+    },
+    "B": {
+      "n": 128,
+      "mean": 3596.85,
+      "stdev": 58.9,
+      "min": 3462,
+      "max": 3729
+    }
+  },
+  "stats": {
+    "tvla_t": 1.108,
+    "tvla_df": 253.3,
+    "tvla_threshold": 4.5,
+    "tvla_result": "PASS",
+    "adla_a2": 2.122,
+    "adla_threshold": 11.99,
+    "adla_result": "PASS"
+  },
+  "conclusion": "No input-value-dependent power leakage detected on NTT core data path under HD toggle model (TVLA and ADLA both PASS)."
+}

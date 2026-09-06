@@ -5,10 +5,12 @@
 //
 // Method (Telescope-style pre-silicon assessment):
 //   Dynamic power proxy = Hamming Distance (bit toggles) on core data-path
-//   signals, accumulated per NTT run. Two input groups (A=fixed patterns,
-//   B=pseudo-random coeffs) are fed through the same NTT pipeline; the
-//   resulting per-run toggle distributions are compared statistically by the
-//   Python analyzer (Welch t-test + Anderson-Darling).
+//   signals, accumulated per NTT run. Two input groups (A and B: both uniform
+//   pseudo-random coeffs in [0,Q-1], different seeds) are fed through the same
+//   NTT pipeline; the resulting per-run toggle distributions are compared
+//   statistically by the Python analyzer (Welch t-test + Anderson-Darling).
+//   Any significant difference between A/B toggle distributions would indicate
+//   input-VALUE dependent power (leakage); identical distributions = clean.
 //
 // Signals monitored (hierarchical refs into tensor_ntt_scheduler -> ntt_core_pipe):
 //   - u_sched.gen_core_pipe.u_ntt_pipe.ram_din     : writeback data bus (core -> RAM)
@@ -17,7 +19,11 @@
 //   - u_sched.ram_dout_a_w           : RAM read data A  (scheduler level)
 //   - u_sched.ram_dout_b_w           : RAM read data B  (scheduler level)
 //
-// Usage: vvp tb_ntt_toggle_tvla.vvp < vectors file order A then B
+// Usage: vvp < tb output captured to file>
+//   Optional compile defines:
+//     -DMODE_INV       : run inverse NTT (mode_i=1); reads sim/inv/vectors_{A,B}.mem
+//     -DRUNS_A=<n>     : override group A run count (default 128)
+//     -DRUNS_B=<n>     : override group B run count (default 128)
 //   Each input line = 256 hex coeffs; per line one full NTT is run and the
 //   total toggle count is printed as: TOGGLE <group> <run> <count>
 // =============================================================================
@@ -26,8 +32,27 @@
 module tb_ntt_toggle_tvla;
     localparam CLK_PERIOD = 10;
     localparam N = 256;
+`ifdef RUNS_A
+    localparam RUNS_A = `RUNS_A;
+`else
     localparam RUNS_A = 128;
+`endif
+`ifdef RUNS_B
+    localparam RUNS_B = `RUNS_B;
+`else
     localparam RUNS_B = 128;
+`endif
+`ifdef MODE_INV
+    localparam MODE = 1;
+`else
+    localparam MODE = 0;
+`endif
+    // vector path prefix (sim/ for fwd, sim/inv/ for inv)
+`ifdef MODE_INV
+    localparam VEC_PRE = "sim/inv/vectors_";
+`else
+    localparam VEC_PRE = "sim/vectors_";
+`endif
 
     reg clk, rst_n;
     integer cycle;
@@ -122,9 +147,9 @@ module tb_ntt_toggle_tvla;
         #(CLK_PERIOD * 5); rst_n = 1; #(CLK_PERIOD * 2);
 
         // ================= GROUP A =================
-        vf = $fopen("sim/vectors_A.mem", "r");
+        vf = $fopen({VEC_PRE, "A.mem"}, "r");
         if (vf == 0) begin
-            $display("[FATAL] cannot open sim/vectors_A.mem");
+            $display("[FATAL] cannot open %sA.mem", VEC_PRE);
             $finish;
         end
         for (run = 0; run < RUNS_A; run = run + 1) begin
@@ -141,9 +166,9 @@ module tb_ntt_toggle_tvla;
         $fclose(vf);
 
         // ================= GROUP B =================
-        vf = $fopen("sim/vectors_B.mem", "r");
+        vf = $fopen({VEC_PRE, "B.mem"}, "r");
         if (vf == 0) begin
-            $display("[FATAL] cannot open sim/vectors_B.mem");
+            $display("[FATAL] cannot open %sB.mem", VEC_PRE);
             $finish;
         end
         for (run = 0; run < RUNS_B; run = run + 1) begin
@@ -158,7 +183,7 @@ module tb_ntt_toggle_tvla;
         end
         $fclose(vf);
 
-        $display("[DONE] %0d runs complete. errors=%0d", RUNS_A + RUNS_B, errors);
+        $display("[DONE] %0d runs complete (mode=%0d). errors=%0d", RUNS_A + RUNS_B, MODE, errors);
         $finish;
     end
 
@@ -185,9 +210,9 @@ module tb_ntt_toggle_tvla;
             prev_wb <= 0; prev_bfa <= 0; prev_bfb <= 0;
             prev_rda <= 0; prev_rdb <= 0;
 
-            // start NTT (forward)
+            // start NTT (forward or inverse per MODE)
             @(posedge clk);
-            s_mode <= 0;
+            s_mode <= MODE;
             started <= 1;
             s_start <= 1;
             @(posedge clk); s_start <= 0;

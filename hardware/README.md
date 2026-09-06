@@ -102,7 +102,7 @@ ADLA  A2=0.753  -> PASS (threshold 11.99)
 **结论**: NTT 流水核 toggle 功耗分布不依赖输入多项式取值——在 HD 模型下无输入值依赖泄露。
 干净基线，后续若引入秘密相关路径 (如 masked 蝶形) 可同框架对比。
 
-**复现**:
+**复现** (B1 原型手动四步，保留作参考):
 
 ```bash
 # 1. 生成 A/B 向量 (根 sim/)
@@ -117,4 +117,39 @@ iverilog -I hardware/rtl/ntt -I hardware/sim -o hardware/sim/tb_ntt_toggle.vvp \
 vvp hardware/sim/tb_ntt_toggle.vvp > sim/toggle_raw.txt
 # 4. 统计 (输出到 results/raw/ntt-toggle-tvla-b1.json)
 python scripts/analyze_toggle.py
+```
+
+## B2+B3 预硅功耗流水线 (双模式 + 一键复现 + CI 门禁)
+
+B2+B3 将 B1 原型升级为**完整可复现流水线** (2026-09-07):
+
+| 新增 | 内容 |
+|------|------|
+| 双模式 | testbench 支持 FWD/INV (`-DMODE_INV`)，INV 读 `sim/inv/vectors_{A,B}.mem` |
+| 可配轮数 | `-DRUNS_A/B` 编译宏覆盖默认 128 |
+| 一键编排 | `scripts/run_tvla_sim.py`：gen → compile → sim → analyze → 报告 → 门禁退出码 |
+| CI 回归 | `.github/workflows/tvla-regression.yml`：push 触及 RTL 自动双模式冒烟 |
+| 方法论文档 | `docs/tvla-methodology.md` |
+
+**一键复现** (替代上方手动四步):
+
+```bash
+python scripts/run_tvla_sim.py --runs 128 --mode fwd   # 正变换
+python scripts/run_tvla_sim.py --runs 128 --mode inv   # 逆变换
+python scripts/run_tvla_sim.py --ci --mode fwd         # CI 冒烟 (32 runs)
+```
+
+退出码: 0 = 全 PASS / 1 = 基础设施错误 / 2 = 检出泄露。
+
+**B2 正式测量结果** (2026-09-07, 128 runs/组 × 双模式):
+
+| 模式 | A mean | B mean | TVLA \|t\| | ADLA A² | 结果 |
+|------|--------|--------|-----------|--------|------|
+| fwd | 1723.19 | 1727.66 | 0.657 | 0.753 | PASS/PASS |
+| inv | 3594.52 | 3596.85 | 1.108 | 2.122 | PASS/PASS |
+
+> FWD 数值与 B1 逐位一致 → 管道改造零回归。INV 均值 ~2.1× (额外 scale 乘法)，
+> A/B 同分布无显著差异 → 正/逆变换均无输入值依赖功耗泄露。
+
+报告: `results/raw/ntt-toggle-tvla-{fwd,inv}-b2b3.json`
 ```

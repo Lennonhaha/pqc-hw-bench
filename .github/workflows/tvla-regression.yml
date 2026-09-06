@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: MIT
+name: tvla-regression
+
+# B3: pre-silicon power side-channel TVLA/ADLA regression gate.
+# Runs the full toggle-count pipeline (vectors -> iverilog sim -> Welch t-test
+# + Anderson-Darling) in CI smoke mode (32 runs/group, fwd + inv) on every push
+# touching RTL or the TVLA pipeline. Any leakage result fails the build.
+
+on:
+  push:
+    paths:
+      - "hardware/rtl/ntt/**"
+      - "hardware/sim/tb_ntt_toggle_tvla.v"
+      - "scripts/gen_ntt_vectors.py"
+      - "scripts/analyze_toggle.py"
+      - "scripts/run_tvla_sim.py"
+      - ".github/workflows/tvla-regression.yml"
+  pull_request:
+    paths:
+      - "hardware/rtl/ntt/**"
+      - "hardware/sim/tb_ntt_toggle_tvla.v"
+      - "scripts/gen_ntt_vectors.py"
+      - "scripts/analyze_toggle.py"
+      - "scripts/run_tvla_sim.py"
+      - ".github/workflows/tvla-regression.yml"
+  workflow_dispatch:
+
+jobs:
+  tvla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install iverilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: TVLA regression - forward NTT
+        run: python3 scripts/run_tvla_sim.py --ci --mode fwd
+
+      - name: TVLA regression - inverse NTT
+        run: python3 scripts/run_tvla_sim.py --ci --mode inv

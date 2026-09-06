@@ -58,8 +58,10 @@ results/raw/kem-baseline-x86.txt
 
 # NTT toggle TVLA simulation artifacts (regenerate via scripts/gen_ntt_vectors.py)
 /sim/vectors_*.mem
+/sim/inv/
 /sim/toggle_raw.txt
 /sim/vvp_out.txt
 /hardware/sim/tb_ntt_toggle.vvp
+/hardware/sim/compile.log
 /scripts/sim/
 /hardware/sim/zetas_mont.mem

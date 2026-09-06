@@ -3,9 +3,19 @@
 # SPDX-License-Identifier: MIT
 """analyze_toggle.py - Welch t-test + ADLA on NTT toggle-count measurements.
 
-Reads sim/toggle_raw.txt (lines: TOGGLE <grp> <run> <count>) produced by
-tb_ntt_toggle_tvla.v and reports leakage statistics between groups A and B.
+Reads a TOGGLE log (lines: TOGGLE <grp> <run> <count>) produced by
+hardware/sim/tb_ntt_toggle_tvla.v and reports leakage statistics between
+groups A and B.
+
+CLI:
+  python analyze_toggle.py [--raw PATH] [--out PATH] [--suite NAME]
+                           [--mode fwd|inv] [--json-only]
+Defaults:
+  --raw <repo>/sim/toggle_raw.txt   --out <repo>/results/raw/ntt-toggle-tvla.json
+  --suite ntt-toggle-tvla           --mode fwd
+  --json-only : print report JSON to stdout (no human table) for CI/orchestrator
 """
+import argparse
 import json
 import math
 import os
@@ -15,17 +25,18 @@ import time
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(BASE)  # scripts/ -> repo root
-RAW = os.path.join(REPO, "sim", "toggle_raw.txt")
-OUT_JSON = os.path.join(REPO, "results", "raw", "ntt-toggle-tvla-b1.json")
 
 
-def load():
-    with open(RAW, encoding="utf-8", errors="replace") as f:
+def load(path):
+    with open(path, encoding="utf-8", errors="replace") as f:
         lines = f.read().splitlines()
     tog = [l for l in lines if l.startswith("TOGGLE")]
     A, B = [], []
     for l in tog:
-        _, grp, run, cnt = l.split()
+        parts = l.split()
+        if len(parts) != 4:
+            continue
+        _, grp, run, cnt = parts
         (A if grp == "A" else B).append(int(cnt))
     return A, B
 
@@ -59,11 +70,18 @@ def ad_stat(x, y):
         M = xi
         s += (n * M - n1 * i) ** 2 / (i * (n - i))
     return s / (n1 * n2)
-    # NOTE: x and y passed as raw lists; sorted() inside handles ordering.
 
 
 def main():
-    A, B = load()
+    ap = argparse.ArgumentParser(description="Analyze NTT toggle-count TVLA/ADLA")
+    ap.add_argument("--raw", default=os.path.join(REPO, "sim", "toggle_raw.txt"))
+    ap.add_argument("--out", default=os.path.join(REPO, "results", "raw", "ntt-toggle-tvla.json"))
+    ap.add_argument("--suite", default="ntt-toggle-tvla")
+    ap.add_argument("--mode", choices=["fwd", "inv"], default="fwd")
+    ap.add_argument("--json-only", action="store_true")
+    args = ap.parse_args()
+
+    A, B = load(args.raw)
     if len(A) < 2 or len(B) < 2:
         print(f"[FATAL] not enough data: A={len(A)} B={len(B)}")
         sys.exit(1)
@@ -74,24 +92,26 @@ def main():
     tvla = "PASS" if abs(t) < 4.5 else "FAIL"
     adla = "PASS" if a2 < 11.99 else "FAIL"
 
-    print(f"A n={len(A)} mean={ma:.2f} stdev={sa:.2f} min={min(A)} max={max(A)}")
-    print(f"B n={len(B)} mean={mb:.2f} stdev={sb:.2f} min={min(B)} max={max(B)}")
-    print(f"TVLA  |t|={abs(t):.3f} (df={df:.0f})  -> {tvla} (threshold 4.5)")
-    print(f"ADLA  A2={a2:.3f}  -> {adla} (threshold 11.99)")
+    if not args.json_only:
+        print(f"A n={len(A)} mean={ma:.2f} stdev={sa:.2f} min={min(A)} max={max(A)}")
+        print(f"B n={len(B)} mean={mb:.2f} stdev={sb:.2f} min={min(B)} max={max(B)}")
+        print(f"TVLA  |t|={abs(t):.3f} (df={df:.0f})  -> {tvla} (threshold 4.5)")
+        print(f"ADLA  A2={a2:.3f}  -> {adla} (threshold 11.99)")
 
     report = {
-        "suite": "ntt-toggle-tvla-b1",
-        "title": "B1 pre-silicon power side-channel: NTT toggle-count TVLA/ADLA",
+        "suite": args.suite,
+        "title": f"Pre-silicon power side-channel: NTT toggle-count TVLA/ADLA ({args.mode})",
         "date": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "mode": args.mode,
         "dut": "tensor_ntt_scheduler (USE_PIPE=1) -> ntt_core_pipe",
         "power_model": "HD toggle count on ram_din/bf_a_out/bf_b_out/ram_dout_a/b",
         "design": "A/B both uniform random coeffs in [0,3328], seeds A11CE/C0FFEE; "
-                  "same distribution, different values -> value-dependence check",
+                   "same distribution, different values -> value-dependence check",
         "groups": {
             "A": {"n": len(A), "mean": round(ma, 2), "stdev": round(sa, 2),
-                   "min": min(A), "max": max(A)},
+                    "min": min(A), "max": max(A)},
             "B": {"n": len(B), "mean": round(mb, 2), "stdev": round(sb, 2),
-                   "min": min(B), "max": max(B)},
+                    "min": min(B), "max": max(B)},
         },
         "stats": {
             "tvla_t": round(t, 3), "tvla_df": round(df, 1),
@@ -104,10 +124,15 @@ def main():
             "path under HD toggle model (TVLA and ADLA both PASS)."
         ),
     }
-    os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
-    with open(OUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
-    print(f"[OK] report written to {OUT_JSON}")
+    if args.json_only:
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+    else:
+        os.makedirs(os.path.dirname(args.out), exist_ok=True)
+        with open(args.out, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2, ensure_ascii=False)
+        print(f"[OK] report written to {args.out}")
+    # exit code gate for CI: both must PASS
+    sys.exit(0 if (tvla == "PASS" and adla == "PASS") else 2)
 
 
 if __name__ == "__main__":
