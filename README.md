@@ -93,8 +93,12 @@ pqc-hw-bench/
 - [x] Vivado 2021.1 全流程综合验证（WNS +9.73ns，DRC 0 Errors）+ 层次资源分解
 - [x] B1 预硅功耗 TVLA/ADLA 原型（fwd，128 runs，PASS/PASS）
 - [x] B2+B3 预硅功耗流水线：双模式 fwd/inv 一键复现 + CI 回归门禁（128 runs 全 PASS）
+- [x] 全量 KEM + 签名基准（95 算法，results/raw/）
+- [x] bench_sw.py 解析验证 → results 结构化 JSON/CSV
+- [x] 报告生成器 scripts/report.py + 首份基准报告 reports/benchmark-2026Q3.md
+- [x] 算力成本模型框架 docs/cost-model.md
 
 **进行中**：
-- [ ] 全量 KEM + 签名基准（results/raw/）
-- [ ] bench_sw.py 解析验证 → results 结构化 JSON/CSV
 - [ ] NTT core cycle counter（硬件测量前置）
+- [ ] 跨平台对比（Zynq/Virtex）
+- [ ] 成本模型接入真实芯片单价与功耗数据
