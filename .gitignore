@@ -65,3 +65,6 @@ results/raw/kem-baseline-x86.txt
 /hardware/sim/compile.log
 /scripts/sim/
 /hardware/sim/zetas_mont.mem
+
+# Web calculator generated screenshots
+www/calculator-preview.png
