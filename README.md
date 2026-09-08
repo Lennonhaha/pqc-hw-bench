@@ -81,6 +81,23 @@ pqc-hw-bench/
 - [PQC-LEO](https://github.com/crt26/PQC-LEO) - CPU/网络 PQC 基准框架(软件方法论参考)
 - [liboqs](https://github.com/open-quantum-safe/liboqs) - C 基准实现来源
 
+## 预硅功耗侧信道 TVLA 流水线（B1/B2/B3）
+
+采用预硅（pre-silicon）功耗 TVLA 方法论（详见 `docs/tvla-methodology.md`），
+对 NTT 加速器 RTL 跑 toggle 攻击模型，用双统计量（TVLA + ADLA）评估功耗侧信道抗力。
+
+| 阶段 | 内容 | 结果 |
+|---|---|---|
+| B1 | NTT forward 单模式原型（128 runs，A/B 组） | TVLA PASS / ADLA PASS |
+| B2 | forward + inverse 双模式复现（一键流水线 `scripts/run_tvla_sim.py`） | 128 runs 全 PASS |
+| B3 | CI 回归门禁（双统计量阈值卡控，每次提交自动重跑） | 128 runs 全 PASS |
+
+**硬件资源（Artix-7，单 NTT core）**：235 LUT / 191 FF / 0 DSP / 0 BRAM
+（Vivado 2021.1 综合，WNS +9.73ns，DRC 0 Errors）。
+
+**CPU 基线（liboqs 0.16.0，gcc 15.2 + AVX2）**：
+ML-KEM-768 keygen 262μs / encaps 290μs / decaps 48.5μs（95 算法全量已测，见 `reports/benchmark-2026Q3.md`）。
+
 ## 状态
 
 🚀 阶段 1 进行中(2026-09-06)
