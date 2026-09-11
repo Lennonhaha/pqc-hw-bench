@@ -9,7 +9,7 @@ hardware/
 ├── rtl/                     # Verilog RTL
 │   ├── fibemate_fpga_top.v  # SoC 式顶层 (NTT 核 + UART 调试通道)
 │   ├── uart_rx.v / uart_tx.v / led_blink.v
-│   └── ntt/                 # NTT 加速器模块 (25 文件)
+│   └── ntt/                 # NTT 加速器模块 (21 个 Verilog 文件，共 23 个含 .vh/.mem)
 │       ├── params.vh        # 参数: q=3329, Montgomery R=2^14 ...
 │       ├── ntt_core.v       # 串行 1-butterfly/cycle 状态机
 │       ├── ntt_core_pipe.v / ntt_core_pipe2.v / ntt_core_pipe2_v5_2.v
@@ -146,7 +146,7 @@ python scripts/run_tvla_sim.py --ci --mode fwd         # CI 冒烟 (32 runs)
 | 模式 | A mean | B mean | TVLA \|t\| | ADLA A² | 结果 |
 |------|--------|--------|-----------|--------|------|
 | fwd | 1723.19 | 1727.66 | 0.657 | 0.753 | PASS/PASS |
-| inv | 3594.52 | 3596.85 | 1.108 | 2.122 | PASS/PASS |
+| inv | 3604.80 | 3596.85 | 1.108 | 2.122 | PASS/PASS |
 
 > FWD 数值与 B1 逐位一致 → 管道改造零回归。INV 均值 ~2.1× (额外 scale 乘法)，
 > A/B 同分布无显著差异 → 正/逆变换均无输入值依赖功耗泄露。
