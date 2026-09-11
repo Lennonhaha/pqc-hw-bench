@@ -9,7 +9,7 @@ hardware/
 ├── rtl/                     # Verilog RTL
 │   ├── fibemate_fpga_top.v  # SoC 式顶层 (NTT 核 + UART 调试通道)
 │   ├── uart_rx.v / uart_tx.v / led_blink.v
-│   └── ntt/                 # NTT 加速器模块 (25 文件)
+│   └── ntt/                 # NTT 加速器模块 (21 个 Verilog 文件，共 23 个含 .vh/.mem)
 │       ├── params.vh        # 参数: q=3329, Montgomery R=2^14 ...
 │       ├── ntt_core.v       # 串行 1-butterfly/cycle 状态机
 │       ├── ntt_core_pipe.v / ntt_core_pipe2.v / ntt_core_pipe2_v5_2.v
