@@ -17,7 +17,7 @@
 
 | 数据 | 值 | 出处 |
 |------|-----|------|
-| NIST 迁移要求 | 2030 前完成联邦系统 PQC 迁移 | NIST IR 8547 (2024-11) transition roadmap |
+| PQC 迁移要求（NIST + 国际监管） | 2030 前完成联邦系统 PQC 迁移；G7/ANSSI/EU/NCSC/SEBI 同步推进（2027 起部分强制、2030/2035 节点） | NIST IR 8547 (2024-11) + G7 Call-to-Action 2026-09-03 + NCSC 2028/2031/2035 + ANSSI 2027/2030 + SEBI CBOM 指令 |
 | 美国行政令 | EO 14411 (2025-08) | "Strengthening and Promoting Innovation in the Nation's Cybersecurity" |
 | 欧盟 | CSA (Cyber Resilience Act) / ETSI | 欧盟委员会网络安全立法框架 |
 

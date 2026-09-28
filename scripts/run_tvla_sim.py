@@ -18,7 +18,7 @@
 # Exit codes: 0 = all PASS, 1 = infra error, 2 = leakage detected (FAIL).
 #
 # CLI:
-#   python scripts/run_tvla_sim.py [--runs 128] [--mode fwd|inv]
+#   python scripts/run_tvla_sim.py [--runs 1000] [--mode fwd|inv]   # default 1000/group
 #                                  [--iverilog C:/iverilog/bin] [--keep-logs]
 #   python scripts/run_tvla_sim.py --ci          # smoke: 32 runs, keep logs
 #
@@ -94,7 +94,8 @@ def run(cmd, cwd, log_path=None):
 
 def main():
     ap = argparse.ArgumentParser(description="B3 pre-silicon TVLA pipeline")
-    ap.add_argument("--runs", type=int, default=128)
+    ap.add_argument("--runs", type=int, default=1000,
+                    help="samples per group (default 1000; --ci overrides to 32)")
     ap.add_argument("--mode", choices=["fwd", "inv"], default="fwd")
     ap.add_argument("--iverilog", default=None, help="iverilog bin dir (auto-detect if omitted)")
     ap.add_argument("--keep-logs", action="store_true", help="keep sim logs (default remove on success)")
@@ -122,9 +123,8 @@ def main():
     defines = []
     if mode == "inv":
         defines.append("-DMODE_INV")
-    if runs != 128:
-        defines.append(f"-DRUNS_A={runs}")
-        defines.append(f"-DRUNS_B={runs}")
+    defines.append(f"-DRUNS_A={runs}")
+    defines.append(f"-DRUNS_B={runs}")
     srcs = [os.path.join(RTL_DIR, s) for s in RTL_SOURCES]
     inc = ["-I", RTL_DIR]
     cmd = [iverilog, "-o", vvp_out, *defines, *inc, TB, *srcs]
