@@ -12,7 +12,7 @@
 #   distribution difference is input-VALUE dependence (leakage signal).
 #
 # CLI: python gen_ntt_vectors.py [--runs N] [--mode fwd|inv] [--outdir DIR]
-#   Defaults: --runs 128 --mode fwd --outdir <repo>/sim
+#   Defaults: --runs 128 (placeholder; overridden by run_tvla_sim.py at runtime) --mode fwd --outdir <repo>/sim
 #   INV mode stores the vector file under sim/inv/ (same A/B split).
 # =============================================================================
 import argparse
@@ -52,7 +52,7 @@ def write_mem(path, runs):
 
 def main():
     ap = argparse.ArgumentParser(description="Generate NTT TVLA A/B vectors")
-    ap.add_argument("--runs", type=int, default=128, help="runs per group (default 128)")
+    ap.add_argument("--runs", type=int, default=128, help="runs per group (default 128; placeholder, overridden by run_tvla_sim.py)")
     ap.add_argument("--mode", choices=["fwd", "inv"], default="fwd")
     ap.add_argument("--outdir", default=None, help="override output dir (default <repo>/sim[/inv])")
     args = ap.parse_args()

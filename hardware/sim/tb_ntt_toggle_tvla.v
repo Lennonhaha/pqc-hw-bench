@@ -22,8 +22,8 @@
 // Usage: vvp < tb output captured to file>
 //   Optional compile defines:
 //     -DMODE_INV       : run inverse NTT (mode_i=1); reads sim/inv/vectors_{A,B}.mem
-//     -DRUNS_A=<n>     : override group A run count (default 128)
-//     -DRUNS_B=<n>     : override group B run count (default 128)
+//     -DRUNS_A=<n>     : override group A run count (Python driver always passes; kept for standalone sim)
+//     -DRUNS_B=<n>     : override group B run count (Python driver always passes; kept for standalone sim)
 //   Each input line = 256 hex coeffs; per line one full NTT is run and the
 //   total toggle count is printed as: TOGGLE <group> <run> <count>
 // =============================================================================
@@ -35,12 +35,12 @@ module tb_ntt_toggle_tvla;
 `ifdef RUNS_A
     localparam RUNS_A = `RUNS_A;
 `else
-    localparam RUNS_A = 128;
+    localparam RUNS_A = 128;  // standalone fallback; run_tvla_sim.py always overrides
 `endif
 `ifdef RUNS_B
     localparam RUNS_B = `RUNS_B;
 `else
-    localparam RUNS_B = 128;
+    localparam RUNS_B = 128;  // standalone fallback; run_tvla_sim.py always overrides
 `endif
 `ifdef MODE_INV
     localparam MODE = 1;
