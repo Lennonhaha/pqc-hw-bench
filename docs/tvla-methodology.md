@@ -45,6 +45,17 @@ NTT 变换（ML-KEM 中 NTT 输入为多项式，可能含秘密系数）。因�
 因此**组内 stdev 反映输入值多样性而非测量噪声**——这正是值依赖检测的
 用武之地。
 
+### 3.1 样本量与检出效力
+默认 `N = 1000`（每组，fwd/inv 各一组；`--ci` 冒烟模式降为 32）。
+样本量决定均值差异检验的标准误 `SE = sqrt(s_A²/n_A + s_B²/n_B)`：
+- **n=128** 时 SE 较大，只能稳定检出较大的系统性均值偏移；
+- **n=1000**（当前默认）将 SE 约降为 128 的 ~1/2.8，对同分布异值设计的
+  小幅度值依赖功耗偏移更敏感，误报/漏报平衡更稳健；
+- 主仓 `fibemate` 软件层 ML-KEM/SM2 TVLA 采用 `N = 10,000` 作为高置信基线，
+  本预硅流水线取 1000 作为 RTL 回归的性价比折中（CI 冒烟仍用 32 控时长）。
+判定阈值（|t| < 4.5 与 A² < 11.99）保持不变——样本量提升的是**灵敏度**，
+而非放宽门禁。
+
 ## 4. 统计检验
 
 ### 4.1 Welch t-test（TVLA 口径）
@@ -76,11 +87,11 @@ $$A^2 = \frac{1}{n_1 n_2} \sum_{i=1}^{n-1} \frac{(n M_i - n_1 i)^2}{i(n-i)}$$
 ### 一键复现
 
 ```bash
-# 完整测量（128 runs/组 × 2 模式）
-python scripts/run_tvla_sim.py --runs 128 --mode fwd
-python scripts/run_tvla_sim.py --runs 128 --mode inv
+# 完整测量（默认 1000 runs/组 × 2 模式；也可显式指定）
+python scripts/run_tvla_sim.py --mode fwd        # 默认 --runs 1000
+python scripts/run_tvla_sim.py --runs 1000 --mode inv
 
-# CI 冒烟（32 runs/组）
+# CI 冒烟（--ci 强制 32 runs/组，控时长）
 python scripts/run_tvla_sim.py --ci --mode fwd
 python scripts/run_tvla_sim.py --ci --mode inv
 ```
@@ -121,5 +132,9 @@ Ubuntu 安装 iverilog，跑 fwd + inv 双模式 `--ci` 冒烟。任何 FAIL（�
 | 2026-09-06 | fwd (B1) | 128 | 0.657 | 0.753 | PASS/PASS |
 | 2026-09-07 | fwd (B2) | 128 | 0.657 | 0.753 | PASS/PASS |
 | 2026-09-07 | inv (B2) | 128 | 1.108 | 2.122 | PASS/PASS |
+
+> 注：上表为 B1/B2 阶段的 n=128 基线记录。自 2026-09-11 起，一键流水线
+> 默认样本量提升至 n=1000（见 §3.1）；B3 复测记录待在具备 iverilog 工具链的
+> 机器上重跑后补充（本机未安装 iverilog，未执行仿真）。
 
 原始报告：`results/raw/ntt-toggle-tvla-{fwd,inv}-b2b3.json`。
