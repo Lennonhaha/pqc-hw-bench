@@ -64,7 +64,8 @@ pqc-hw-bench/
 | `hardware/` (Verilog RTL) | CERN-OHL-P-2.0(宽松硬件许可证,NLnet 认可) |
 | `software/` + `scripts/` | MIT(与 liboqs / PQC-LEO 生态一致) |
 | `docs/` + `reports/` | CC BY-SA 4.0 |
-| 仓库整体 | 见各目录 LICENSE 声明 |
+
+仓库默认（软件与脚本）为 MIT，GitHub 首页显示的即该许可证。权威概览与三份许可证全文位置见 [`LICENSE-MAP.md`](./LICENSE-MAP.md)。
 
 硬件 RTL 来自 FIBEMATE 项目(作者同源,文件级 SPDX 授权),
 详见 `docs/provenance.md`。
